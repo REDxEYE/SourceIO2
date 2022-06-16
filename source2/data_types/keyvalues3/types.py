@@ -4,7 +4,7 @@ from typing import List, TypeVar, Optional, Collection
 
 import numpy as np
 
-from SourceIO2.source2.data_blocks.keyvalues3.enums import KV3TypeFlag, KV3Type
+from SourceIO2.source2.data_types.keyvalues3.enums import KV3TypeFlag, KV3Type
 
 
 class BaseType:

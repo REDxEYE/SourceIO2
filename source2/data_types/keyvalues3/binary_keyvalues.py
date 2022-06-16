@@ -4,8 +4,8 @@ from typing import List, Tuple, Optional, Union, Any
 
 import numpy as np
 
-from SourceIO2.source2.data_blocks.keyvalues3.enums import *
-from SourceIO2.source2.data_blocks.keyvalues3.types import *
+from SourceIO2.source2.data_types.keyvalues3.enums import *
+from SourceIO2.source2.data_types.keyvalues3.types import *
 from SourceIO2.utils.file_utils import IBuffer, MemoryBuffer, FileBuffer
 from SourceIO2.utils.pylib_loader import pylib
 from SourceIO2.utils.thirdparty.zstandard import ZstdDecompressor, ZstdCompressor

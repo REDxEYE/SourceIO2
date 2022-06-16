@@ -1,1 +1,1 @@
-from .generic import GenericCompiledFile
+from .generic import GenericCompiledResource

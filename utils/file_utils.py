@@ -140,9 +140,6 @@ class MemoryBuffer(io.BytesIO, IBuffer):
 
 class FileBuffer(io.FileIO, IBuffer):
 
-    def __init__(self, *args, **kwargs):
-        io.FileIO.__init__(self, *args, **kwargs)
-
     def size(self):
         return os.fstat(self.fileno()).st_size
 
