@@ -1,1 +1,1 @@
-from .file_utils import IBuffer, FileBuffer, MemoryBuffer
+from .file_utils import IBuffer, FileBuffer, MemoryBuffer, IFromFile

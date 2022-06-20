@@ -1,44 +1,48 @@
-from dataclasses import dataclass
-from typing import List
+from typing import Type
 
-from SourceIO2.source2.data_types.header import ResourceHeader
 from SourceIO2.utils import IBuffer
+from SourceIO2.source2.data_types.info_block import InfoBlock
+from SourceIO2.source2.data_types.blocks import BaseBlock, ResourceEditInfo, KV3Block, ResourceExternalReferenceList
+from SourceIO2.source2.data_types.header import ResourceHeader
+from SourceIO2.source2.resource_types.resource import ICompiledResource
+from SourceIO2.source2.data_types.blocks.dummy import DummyBlock
+from SourceIO2.source2.data_types.blocks.vertex_index_buffer import VertexIndexBuffer
 
 
-@dataclass
-class InfoBlock:
-    name: str
-    offset: int
-    size: int
-
-    @classmethod
-    def from_file(cls, buffer: IBuffer):
-        name = buffer.read_ascii_string(4)
-        block_offset = buffer.tell() + buffer.read_uint32()
-        block_size = buffer.read_uint32()
-        return cls(name, block_offset, block_size)
-
-    def to_file(self, buffer: IBuffer):
-        buffer.write_ascii_string(self.name)
-        buffer.write_uint32(buffer.tell() - self.offset)
-        buffer.write_uint32(self.size)
-
-
-class GenericCompiledResource:
-
-    def __init__(self, file: IBuffer):
-        self._buffer = file
-        self._header: ResourceHeader = ResourceHeader(0, 0, 0, 0, 0)
-
-        self._blocks: List[InfoBlock] = []
+class GenericCompiledResource(ICompiledResource):
 
     @classmethod
     def from_file(cls, buffer: IBuffer):
         self = cls(buffer)
         self._header = ResourceHeader.from_file(buffer)
         buffer.seek(self._header.block_info_offset)
-        self._blocks = [InfoBlock.from_file(buffer) for _ in range(self._header.block_count)]
+        self._info_blocks = [InfoBlock.from_file(buffer) for _ in range(self._header.block_count)]
         return self
 
-    def __del__(self):
-        self._buffer.close()
+    def _get_block_class(self, name) -> Type[BaseBlock]:
+        if name == "NTRO":
+            return ResourceIntrospectionManifest
+        elif name == "REDI":
+            return ResourceEditInfo
+        elif name == "RED2":
+            return ResourceEditInfo2
+        elif name == "RERL":
+            return ResourceExternalReferenceList
+        elif name == 'ASEQ':
+            return KV3Block
+        elif name == 'MDAT':
+            return KV3Block
+        elif name == 'PHYS':
+            return KV3Block
+        elif name == 'AGRP':
+            return KV3Block
+        elif name == 'DATA':
+            return KV3Block
+        elif name == 'CTRL':
+            return KV3Block
+        elif name == 'MRPH':
+            return KV3Block
+        elif name == 'MBUF':
+            return VertexIndexBuffer
+        else:
+            return DummyBlock

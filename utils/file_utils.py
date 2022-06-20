@@ -1,10 +1,26 @@
 import abc
+import binascii
+import contextlib
 import io
 import os
 from struct import unpack, calcsize, pack
+from typing import overload, TypeVar
 
 
 class IBuffer(abc.ABC, io.RawIOBase):
+    @contextlib.contextmanager
+    def save_current_pos(self):
+        entry = self.tell()
+        yield
+        self.seek(entry)
+
+    @contextlib.contextmanager
+    def read_from_offset(self, offset: int):
+        entry = self.tell()
+        self.seek(offset)
+        yield
+        self.seek(entry)
+
     @property
     @abc.abstractmethod
     def data(self):
@@ -13,6 +29,11 @@ class IBuffer(abc.ABC, io.RawIOBase):
     @abc.abstractmethod
     def size(self):
         raise NotImplementedError()
+
+    @property
+    def preview(self):
+        with self.save_current_pos():
+            return binascii.hexlify(self.read(64), sep=' ', bytes_per_sep=4).decode('ascii').upper()
 
     def align(self, align_to):
         value = self.tell()
@@ -78,6 +99,21 @@ class IBuffer(abc.ABC, io.RawIOBase):
 
     def read_fourcc(self):
         return self.read_ascii_string(4)
+
+    def read_source1_string(self, entry):
+        offset = self.read_int32()
+        if offset:
+            with self.save_current_pos():
+                self.seek(entry + offset)
+                return self.read_ascii_string()
+        else:
+            return ""
+
+    def read_source2_string(self):
+        offset = self.tell() + self.read_int32()
+        with self.save_current_pos():
+            self.seek(offset)
+            return self.read_ascii_string()
 
     def write_fmt(self, fmt: str, *values):
         self.write(pack(fmt, *values))
@@ -152,4 +188,14 @@ class FileBuffer(io.FileIO, IBuffer):
         return _data
 
 
-__all__ = ['IBuffer', 'MemoryBuffer', 'FileBuffer']
+T = TypeVar('T', bound='IFromFile')
+
+
+class IFromFile(abc.ABC):
+    @classmethod
+    @abc.abstractmethod
+    def from_file(cls: T, buffer: IBuffer) -> T:
+        ...
+
+
+__all__ = ['IBuffer', 'MemoryBuffer', 'FileBuffer', 'IFromFile']

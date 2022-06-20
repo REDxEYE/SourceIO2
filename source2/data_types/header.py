@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
-from SourceIO2.utils import IBuffer
+from SourceIO2.utils import IBuffer, IFromFile
 
 
 @dataclass
-class ResourceHeader:
+class ResourceHeader(IFromFile):
     file_size: int
     header_version: int
     resource_version: int
