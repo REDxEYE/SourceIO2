@@ -40,11 +40,17 @@ class IBuffer(abc.ABC, io.RawIOBase):
         padding = (align_to - value % align_to) % align_to
         self.seek(padding, io.SEEK_CUR)
 
+    def skip(self, size):
+        self.seek(size, io.SEEK_CUR)
+
     def read_fmt(self, fmt):
         return unpack(fmt, self.read(calcsize(fmt)))
 
     def _read(self, fmt):
         return unpack(fmt, self.read(calcsize(fmt)))[0]
+
+    def read_relative_offset32(self):
+        return self.tell() + self.read_uint32()
 
     def read_uint64(self):
         return self._read('Q')
@@ -173,6 +179,15 @@ class MemoryBuffer(io.BytesIO, IBuffer):
     def data(self):
         return self.getbuffer()
 
+    def seek(self, offset: int, whence: int = io.SEEK_SET) -> int:
+        res = super().seek(offset, whence)
+        if res > self.size():
+            raise BufferError('Offset is out of bounds')
+        return res
+
+    def __str__(self) -> str:
+        return f'<MemoryBuffer {self.tell()}/{self.size()}>'
+
 
 class FileBuffer(io.FileIO, IBuffer):
 
@@ -187,14 +202,14 @@ class FileBuffer(io.FileIO, IBuffer):
         self.seek(offset)
         return _data
 
-
-T = TypeVar('T', bound='IFromFile')
+    def __str__(self) -> str:
+        return f'<FileBuffer: {self.name!r} {self.tell()}/{self.size()}>'
 
 
 class IFromFile(abc.ABC):
     @classmethod
     @abc.abstractmethod
-    def from_file(cls: T, buffer: IBuffer) -> T:
+    def from_file(cls, buffer: IBuffer):
         ...
 
 
