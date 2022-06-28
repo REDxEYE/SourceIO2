@@ -1,19 +1,19 @@
-from typing import Type
+from pathlib import Path
+from typing import Type, Union
 
 from SourceIO2.utils import IBuffer
 from SourceIO2.source2.data_types.info_block import InfoBlock
-from SourceIO2.source2.data_types.blocks import BaseBlock, ResourceEditInfo, KV3Block, ResourceExternalReferenceList
+from SourceIO2.source2.data_types.blocks import BaseBlock, ResourceEditInfo, DataBlock, ResourceExternalReferenceList, \
+    ResourceIntrospectionManifest, VertexIndexBuffer, DummyBlock, PhysBlock, AseqBlock, AgrpBlock
 from SourceIO2.source2.data_types.header import ResourceHeader
 from SourceIO2.source2.resource_types.resource import ICompiledResource
-from SourceIO2.source2.data_types.blocks.dummy import DummyBlock
-from SourceIO2.source2.data_types.blocks.vertex_index_buffer import VertexIndexBuffer
 
 
-class GenericCompiledResource(ICompiledResource):
+class CompiledGenericResource(ICompiledResource):
 
     @classmethod
-    def from_file(cls, buffer: IBuffer):
-        self = cls(buffer)
+    def from_file(cls, buffer: IBuffer, filename: Path):
+        self = cls(buffer, filename)
         self._header = ResourceHeader.from_file(buffer)
         buffer.seek(self._header.block_info_offset)
         self._info_blocks = [InfoBlock.from_file(buffer) for _ in range(self._header.block_count)]
@@ -29,20 +29,27 @@ class GenericCompiledResource(ICompiledResource):
         elif name == "RERL":
             return ResourceExternalReferenceList
         elif name == 'ASEQ':
-            return KV3Block
+            return AseqBlock
         elif name == 'MDAT':
-            return KV3Block
+            return DataBlock
         elif name == 'PHYS':
-            return KV3Block
+            return PhysBlock
         elif name == 'AGRP':
-            return KV3Block
+            return AgrpBlock
         elif name == 'DATA':
-            return KV3Block
+            return DataBlock
         elif name == 'CTRL':
-            return KV3Block
+            return DataBlock
         elif name == 'MRPH':
-            return KV3Block
+            return DataBlock
         elif name == 'MBUF':
             return VertexIndexBuffer
         else:
             return DummyBlock
+
+    def get_child_resource_path(self, name_or_id: Union[str, int]):
+        external_resource_list: ResourceExternalReferenceList
+        external_resource_list, = self.get_data_block(block_name='RERL')
+        for child_resource in external_resource_list:
+            if child_resource.hash == name_or_id or child_resource.name == name_or_id:
+                return Path(child_resource.name + '_c')
