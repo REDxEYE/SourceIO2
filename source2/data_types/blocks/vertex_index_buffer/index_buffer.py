@@ -1,7 +1,7 @@
 import numpy as np
 
 from SourceIO2.utils import IFromFile, IBuffer
-from SourceIO2.utils.file_utils import T, MemoryBuffer
+from SourceIO2.utils.file_utils import MemoryBuffer
 from SourceIO2.utils.pylib_loader import pylib
 
 
@@ -21,7 +21,7 @@ class IndexBuffer(IFromFile):
         self = cls()
         self.index_count, self.index_size = buffer.read_fmt('2I')
         unk1, unk2 = buffer.read_fmt('2I')
-        data_offset = buffer.tell() + buffer.read_uint32()
+        data_offset = buffer.read_relative_offset32()
         data_size = buffer.read_uint32()
 
         with buffer.read_from_offset(data_offset):

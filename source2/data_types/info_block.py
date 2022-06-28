@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from SourceIO2.utils import IBuffer, IFromFile
 
 
-@dataclass
+@dataclass(slots=True)
 class InfoBlock(IFromFile):
     name: str
     offset: int
@@ -12,7 +12,7 @@ class InfoBlock(IFromFile):
     @classmethod
     def from_file(cls, buffer: IBuffer):
         name = buffer.read_ascii_string(4)
-        block_offset = buffer.tell() + buffer.read_uint32()
+        block_offset = buffer.read_relative_offset32()
         block_size = buffer.read_uint32()
         return cls(name, block_offset, block_size)
 

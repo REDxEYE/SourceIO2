@@ -47,6 +47,7 @@ class KV3Type(IntEnum):
     ARRAY_TYPED = 10
     INT32 = 11
     UINT32 = 12
+
     BOOLEAN_TRUE = 13
     BOOLEAN_FALSE = 14
     INT64_ZERO = 15

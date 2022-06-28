@@ -17,7 +17,7 @@ class IDependencyList(List[T], IFromFile):
     @classmethod
     def from_file(cls, buffer: IBuffer) -> 'IDependencyList':
         self = cls()
-        offset = buffer.tell() + buffer.read_uint32()
+        offset = buffer.read_relative_offset32()
         size = buffer.read_uint32()
         with buffer.read_from_offset(offset):
             for _ in range(size):

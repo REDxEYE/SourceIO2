@@ -24,10 +24,10 @@ class VertexBuffer(IFromFile):
     def from_file(cls, buffer: IBuffer) -> 'VertexBuffer':
         self = cls()
         self.vertex_count, self.vertex_size = buffer.read_fmt('2I')
-        attr_offset = buffer.tell() + buffer.read_uint32()
+        attr_offset = buffer.read_relative_offset32()
         attr_count = buffer.read_uint32()
 
-        data_offset = buffer.tell() + buffer.read_uint32()
+        data_offset = buffer.read_relative_offset32()
         data_size = buffer.read_uint32()
 
         with buffer.read_from_offset(attr_offset):
@@ -59,7 +59,7 @@ class VertexBuffer(IFromFile):
                f'vertex size:{self.vertex_size}>'
 
 
-@dataclass
+@dataclass(slots=True)
 class VertexAttribute(IFromFile):
     _name: str
     index: int

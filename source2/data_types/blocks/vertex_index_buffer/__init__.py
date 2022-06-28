@@ -15,9 +15,9 @@ class VertexIndexBuffer(BaseBlock):
 
     @classmethod
     def from_file(cls, buffer: IBuffer, resource: ICompiledResource):
-        vertex_buffers_offset = buffer.tell() + buffer.read_uint32()
+        vertex_buffers_offset = buffer.read_relative_offset32()
         vertex_buffers_count = buffer.read_uint32()
-        index_buffers_offset = buffer.tell() + buffer.read_uint32()
+        index_buffers_offset = buffer.read_relative_offset32()
         index_buffers_count = buffer.read_uint32()
         self = cls(buffer, resource)
         with buffer.read_from_offset(vertex_buffers_offset):

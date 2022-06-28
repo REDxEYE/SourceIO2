@@ -19,7 +19,7 @@ class UnsupportedVersion(Exception):
     pass
 
 
-@dataclass
+@dataclass(slots=True)
 class BufferGroup:
     byte_buffer: IBuffer
     int_buffer: IBuffer
@@ -182,6 +182,8 @@ class BinaryKeyValues:
             return Bool(False)
         elif data_type == KV3Type.BOOLEAN_TRUE:
             return Bool(True)
+        elif data_type == KV3Type.BOOLEAN:
+            return Bool(buffers.byte_buffer.read_uint8() == 1)
         elif data_type == KV3Type.BINARY_BLOB:
             if buffers.blocks_buffer:
                 return BinaryBlob(buffers.blocks_buffer.read(block_sizes.pop(0)))

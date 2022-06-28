@@ -4,21 +4,21 @@ from SourceIO2.utils import IBuffer
 from .idependency import IDependency, IDependencyList
 
 
-@dataclass
+@dataclass(slots=True)
 class ExtraData(IDependency):
     name: str
 
 
-@dataclass
+@dataclass(slots=True)
 class ExtraIntData(ExtraData):
     value: int
 
     @classmethod
     def from_file(cls, buffer: IBuffer):
-        return cls(buffer.read_source2_string(), buffer.read_uint32())
+        return cls(buffer.read_source2_string(), buffer.read_int32())
 
 
-@dataclass
+@dataclass(slots=True)
 class ExtraFloatData(ExtraData):
     value: float
 
@@ -27,7 +27,7 @@ class ExtraFloatData(ExtraData):
         return cls(buffer.read_source2_string(), buffer.read_float())
 
 
-@dataclass
+@dataclass(slots=True)
 class ExtraStringData(ExtraData):
     value: str
 

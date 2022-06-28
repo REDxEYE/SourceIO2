@@ -1,13 +1,15 @@
 import abc
-from typing import TYPE_CHECKING, Type, TypeVar
+from typing import Optional
 
+from SourceIO2.source2.data_types.abstract_block import IBlock
 from SourceIO2.utils import IBuffer
 
-if TYPE_CHECKING:
-    from SourceIO2.source2.resource_types.resource import ICompiledResource
+from SourceIO2.source2.resource_types.resource import ICompiledResource
 
 
-class BaseBlock:
+class BaseBlock(IBlock):
+    custom_name: Optional[str] = None
+
     def __init__(self, buffer: IBuffer, resource: 'ICompiledResource'):
         self._buffer = buffer
         self._resource = resource

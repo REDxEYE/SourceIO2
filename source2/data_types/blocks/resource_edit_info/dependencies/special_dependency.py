@@ -4,7 +4,7 @@ from SourceIO2.utils import IBuffer
 from .idependency import IDependency, IDependencyList
 
 
-@dataclass
+@dataclass(slots=True)
 class SpecialDependency(IDependency):
     string: str
     compiler_id: str

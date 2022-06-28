@@ -4,7 +4,7 @@ from SourceIO2.utils import IBuffer
 from .idependency import IDependency, IDependencyList
 
 
-@dataclass
+@dataclass(slots=True)
 class AdditionalRelatedFile(IDependency):
     relative_filename: str
     search_path: str
