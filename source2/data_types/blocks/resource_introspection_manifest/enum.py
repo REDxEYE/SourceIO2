@@ -15,6 +15,8 @@ class EnumValue(IFromFile):
         value = buffer.read_uint32()
         with buffer.read_from_offset(name_offset):
             name = buffer.read_ascii_string()
+            if '::' in name:
+                _, name = name.split('::', 1)
         return cls(name, value)
 
 
@@ -25,11 +27,11 @@ class Enum(IFromFile):
     name: str
     disc_crc: int
     user_version: int
-    values: Dict[str, EnumValue]
+    values: Dict[int, EnumValue]
 
     @classmethod
     def from_file(cls, buffer: IBuffer):
-        version, s_id = buffer.read_fmt('2i')
+        version, s_id = buffer.read_fmt('2I')
         assert version == 4, f'Introspection version {version} is not supported'
         name_offset = buffer.read_relative_offset32()
         disc_crc, user_version = buffer.read_fmt('2i')
@@ -41,5 +43,5 @@ class Enum(IFromFile):
             values = {}
             for _ in range(values_count):
                 value = EnumValue.from_file(buffer)
-                values[value.name] = value
+                values[value.value] = value
         return cls(version, s_id, name, disc_crc, user_version, values)
