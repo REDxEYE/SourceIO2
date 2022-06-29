@@ -13,6 +13,9 @@ class BaseType:
 
 
 class NullObject(BaseType):
+    def __bool__(self):
+        return False
+
     pass
 
 

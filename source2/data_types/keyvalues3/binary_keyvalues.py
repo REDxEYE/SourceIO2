@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Tuple, Optional, Union, Any
@@ -113,9 +114,61 @@ class BinaryKeyValues:
             flag = KV3TypeFlag.NONE
         return KV3Type(data_type), flag
 
-    def _read_array(self, size: int, buffers: BufferGroup,
-                    strings: List[str], block_sizes: List[int],
-                    data_type: Optional[KV3Type], data_flag: Optional[KV3TypeFlag]):
+    def _read_null(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        return NullObject()
+
+    def _read_bool(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        return Bool(buffers.byte_buffer.read_uint8() == 1)
+
+    def _read_int64(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        return Int64(buffers.double_buffer.read_int64())
+
+    def _read_uint64(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        return UInt64(buffers.double_buffer.read_int64())
+
+    def _read_double(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        return Double(buffers.double_buffer.read_double())
+
+    def _read_string(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        str_id = buffers.int_buffer.read_int32()
+        if str_id == -1:
+            return String('')
+        return String(strings[str_id])
+
+    def _read_blob(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        if block_sizes:
+            return BinaryBlob(buffers.blocks_buffer.read(block_sizes.pop(0)))
+        return BinaryBlob(buffers.byte_buffer.read(buffers.int_buffer.read_int32()))
+
+    def _read_array(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        size = buffers.int_buffer.read_int32()
+        array = Array([None] * size)
+        for i in range(size):
+            item_type, item_flags = self._read_type(buffers.type_buffer)
+            reader = self._kv_readers[item_type]
+            item = reader(self, buffers, strings, block_sizes)
+            item.flag = item_flags
+            array[i] = item
+        return array
+
+    def _read_object(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        attribute_count = buffers.int_buffer.read_uint32()
+        obj = Object()
+        for _ in range(attribute_count):
+            name_id = buffers.int_buffer.read_int32()
+            name = strings[name_id] if name_id != -1 else ""
+
+            data_type, data_flag = self._read_type(buffers.type_buffer)
+            reader = self._kv_readers[data_type]
+            item = reader(self, buffers, strings, block_sizes)
+            if isinstance(item, BaseType):
+                item.flag = data_flag
+            obj[name] = item
+        return obj
+
+    def _read_array_typed(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        size = buffers.int_buffer.read_int32()
+        data_type, data_flag = self._read_type(buffers.type_buffer)
         if data_type == KV3Type.DOUBLE_ZERO:
             return np.zeros(size, np.float64)
         elif data_type == KV3Type.DOUBLE_ONE:
@@ -135,62 +188,54 @@ class BinaryKeyValues:
         elif data_type == KV3Type.UINT32:
             return np.frombuffer(buffers.int_buffer.read(4 * size), np.uint32)
         else:
-            return TypedArray(data_type, data_flag, [
-                self._read_value(buffers, strings, block_sizes, data_type, data_flag) for _ in range(size)])
+            reader = self._kv_readers[data_type]
+            return TypedArray(data_type, data_flag, [reader(self, buffers, strings, block_sizes) for _ in range(size)])
 
-    def _read_value(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int],
-                    data_type: Optional[KV3Type], data_flag: Optional[KV3TypeFlag]):
+    def _read_int32(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        return Int32(buffers.int_buffer.read_int32())
 
-        if data_type == KV3Type.NULL:
-            return NullObject()
-        elif data_type == KV3Type.OBJECT:
-            attribute_count = buffers.int_buffer.read_uint32()
-            obj = Object()
-            for _ in range(attribute_count):
-                name_id = buffers.int_buffer.read_int32()
-                name = strings[name_id] if name_id != -1 else ""
-                obj[name] = self._read_value(buffers, strings, block_sizes, *self._read_type(buffers.type_buffer))
-            return obj
-        elif data_type == KV3Type.STRING:
-            str_id = buffers.int_buffer.read_int32()
-            string = String(strings[str_id]) if str_id >= 0 else String("")
-            string.flag = data_flag
-            return string
-        elif data_type == KV3Type.INT32:
-            return Int32(buffers.int_buffer.read_int32())
-        elif data_type == KV3Type.ARRAY_TYPED:
-            size = buffers.int_buffer.read_uint32()
-            return self._read_array(size, buffers, strings, block_sizes, *self._read_type(buffers.type_buffer))
-        elif data_type == KV3Type.ARRAY:
-            size = buffers.int_buffer.read_uint32()
-            return Array(
-                [self._read_value(buffers, strings, block_sizes, *self._read_type(buffers.type_buffer)) for _ in
-                 range(size)])
-        elif data_type == KV3Type.DOUBLE_ZERO:
-            return Double(0)
-        elif data_type == KV3Type.DOUBLE_ONE:
-            return Double(1)
-        elif data_type == KV3Type.DOUBLE:
-            return Double(buffers.double_buffer.read_double())
-        elif data_type == KV3Type.INT64_ZERO:
-            return Int64(0)
-        elif data_type == KV3Type.INT64_ONE:
-            return Int64(1)
-        elif data_type == KV3Type.INT64:
-            return Int64(buffers.double_buffer.read_uint64())
-        elif data_type == KV3Type.BOOLEAN_FALSE:
-            return Bool(False)
-        elif data_type == KV3Type.BOOLEAN_TRUE:
-            return Bool(True)
-        elif data_type == KV3Type.BOOLEAN:
-            return Bool(buffers.byte_buffer.read_uint8() == 1)
-        elif data_type == KV3Type.BINARY_BLOB:
-            if buffers.blocks_buffer:
-                return BinaryBlob(buffers.blocks_buffer.read(block_sizes.pop(0)))
-            else:
-                return BinaryBlob(buffers.byte_buffer.read(buffers.int_buffer.read_int32()))
-        else:
-            raise NotImplementedError(f'Data type: {data_type!r}:{data_flag!r} not implemented')
+    def _read_uint32(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        return UInt32(buffers.int_buffer.read_int32())
+
+    def _read_bool_true(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        return Bool(True)
+
+    def _read_bool_false(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        return Bool(False)
+
+    def _read_int64_zero(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        return Int64(0)
+
+    def _read_int64_one(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        return Int64(1)
+
+    def _read_double_zero(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        return Double(0)
+
+    def _read_double_one(self, buffers: BufferGroup, strings: List[str], block_sizes: List[int]):
+        return Double(1)
+
+    _kv_readers = (
+        None,
+        _read_null,
+        _read_bool,
+        _read_int64,
+        _read_uint64,
+        _read_double,
+        _read_string,
+        _read_blob,
+        _read_array,
+        _read_object,
+        _read_array_typed,
+        _read_int32,
+        _read_uint32,
+        _read_bool_true,
+        _read_bool_false,
+        _read_int64_zero,
+        _read_int64_one,
+        _read_double_zero,
+        _read_double_one,
+    )
 
     def _read_v1(self, buffer: IBuffer):
         encoding = buffer.read(16)
@@ -213,7 +258,10 @@ class BinaryKeyValues:
 
         bg = BufferGroup(data_buffer, data_buffer, data_buffer, data_buffer, None)
 
-        self.root = self._read_value(bg, strings, [], *self._read_type(data_buffer))
+        data_type, data_flag = self._read_type(data_buffer)
+        reader = self._kv_readers[data_type]
+        self.root = reader(self, bg, strings, [])
+        self.root.flag = data_flag
 
     def _read_v2(self, buffer: IBuffer):
         self.format = buffer.read(16)
@@ -253,7 +301,10 @@ class BinaryKeyValues:
         types_buffer = MemoryBuffer(data_buffer.read())
 
         bg = BufferGroup(byte_buffer, int_buffer, double_buffer, types_buffer, None)
-        self.root = self._read_value(bg, strings, [], *self._read_type(types_buffer))
+        data_type, data_flag = self._read_type(types_buffer)
+        reader = self._kv_readers[data_type]
+        self.root = reader(self, bg, strings, [])
+        self.root.flag = data_flag
 
     def _read_v3(self, buffer: IBuffer):
         self.format = buffer.read(16)
@@ -347,7 +398,10 @@ class BinaryKeyValues:
             block_reader = MemoryBuffer(block_data)
 
         bg = BufferGroup(byte_buffer, int_buffer, double_buffer, types_buffer, block_reader)
-        self.root = self._read_value(bg, strings, block_sizes, *self._read_type(types_buffer))
+        data_type, data_flag = self._read_type(types_buffer)
+        reader = self._kv_readers[data_type]
+        self.root = reader(self, bg, strings, block_sizes)
+        self.root.flag = data_flag
 
     def _collect_data(self, node: Union[Object, Array, TypedArray]):
         strings = set()
