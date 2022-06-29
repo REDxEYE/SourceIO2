@@ -1,9 +1,6 @@
 from pathlib import Path
 
 from SourceIO2.utils.file_utils import FileBuffer, IBuffer
-from SourceIO2.source2.resource_types.compiled_generic_resource import CompiledGenericResource
-from SourceIO2.source2.resource_types.compiled_material_resource import CompiledMaterialResource
-from SourceIO2.source2.resource_types.compiled_texture_resource import CompiledTextureResource
 
 
 def load_compiled_resource_from_path(path: Path):
@@ -18,4 +15,16 @@ def load_compiled_resource(buffer: IBuffer, path: Path):
         return CompiledTextureResource.from_file(buffer, path)
     if file_type == '.vmat_c':
         return CompiledMaterialResource.from_file(buffer, path)
+    if file_type == '.vwrld_c':
+        return CompiledWorldResource.from_file(buffer, path)
+    if file_type == '.vmdl_c':
+        return CompiledModelRecourse.from_file(buffer, path)
     return CompiledGenericResource.from_file(buffer, path)
+
+
+# Recursive import bypass
+from SourceIO2.source2.resource_types.compiled_generic_resource import CompiledGenericResource
+from SourceIO2.source2.resource_types.compiled_model_resource import CompiledModelRecourse
+from SourceIO2.source2.resource_types.compiled_material_resource import CompiledMaterialResource
+from SourceIO2.source2.resource_types.compiled_texture_resource import CompiledTextureResource
+from SourceIO2.source2.resource_types.compiled_world_resource import CompiledWorldResource

@@ -4,7 +4,7 @@ from typing import Type, Union
 from SourceIO2.utils import IBuffer
 from SourceIO2.source2.data_types.info_block import InfoBlock
 from SourceIO2.source2.data_types.blocks import BaseBlock, ResourceEditInfo, DataBlock, ResourceExternalReferenceList, \
-    ResourceIntrospectionManifest, VertexIndexBuffer, DummyBlock, PhysBlock, AseqBlock, AgrpBlock
+    ResourceIntrospectionManifest, VertexIndexBuffer, DummyBlock, PhysBlock, AseqBlock, AgrpBlock, MorphBlock
 from SourceIO2.source2.data_types.header import ResourceHeader
 from SourceIO2.source2.resource_types.resource import ICompiledResource
 
@@ -41,7 +41,7 @@ class CompiledGenericResource(ICompiledResource):
         elif name == 'CTRL':
             return DataBlock
         elif name == 'MRPH':
-            return DataBlock
+            return MorphBlock
         elif name == 'MBUF':
             return VertexIndexBuffer
         else:

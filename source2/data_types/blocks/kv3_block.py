@@ -24,16 +24,17 @@ class DataBlock(Dict[str, BaseType], BaseBlock):
     @classmethod
     def from_file(cls, buffer: IBuffer, resource: ICompiledResource) -> 'DataBlock':
         self: 'DataBlock' = cls(buffer, resource)
-        magic = buffer.read(4)
-        buffer.seek(-4, 1)
-        if KV3Signatures.is_valid(magic):
-            kv3 = BinaryKeyValues.from_file(buffer)
-            self.update(kv3.root)
-        elif self.has_ntro:
-            ntro: ResourceIntrospectionManifest
-            ntro, = resource.get_data_block(block_name='NTRO')
-            top_struct = ntro.struct_by_pos(0)
-            self.update(ntro.read_struct(buffer, top_struct))
-        else:
-            raise NotImplementedError('Unknown data block format')
+        if buffer.size()>0:
+            magic = buffer.read(4)
+            buffer.seek(-4, 1)
+            if KV3Signatures.is_valid(magic):
+                kv3 = BinaryKeyValues.from_file(buffer)
+                self.update(kv3.root)
+            elif self.has_ntro:
+                ntro: ResourceIntrospectionManifest
+                ntro, = resource.get_data_block(block_name='NTRO')
+                top_struct = ntro.struct_by_pos(0)
+                self.update(ntro.read_struct(buffer, top_struct))
+            else:
+                raise NotImplementedError('Unknown data block format')
         return self

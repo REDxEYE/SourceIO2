@@ -8,4 +8,5 @@ from .kv3_block import DataBlock
 from .phys_block import PhysBlock
 from .aseq_block import AseqBlock
 from .agrp_block import AgrpBlock
+from .morph_block import MorphBlock
 from .dummy import DummyBlock
