@@ -79,19 +79,9 @@ class VPKFile:
         self = cls(buffer, filepath)
         self.header = VPKHeader.from_file(buffer)
 
-        while 1:
-            type_name = buffer.read_ascii_string()
-            if not type_name:
-                break
-            while 1:
-                directory_name = buffer.read_ascii_string()
-                if not directory_name:
-                    break
-                while 1:
-                    file_name = buffer.read_ascii_string()
-                    if not file_name:
-                        break
-
+        while type_name := buffer.read_ascii_string():
+            while directory_name := buffer.read_ascii_string():
+                while file_name := buffer.read_ascii_string():
                     full_path = f'{directory_name}/{file_name}.{type_name}'.lower()
                     self.entries[full_path] = LazyVPKFileEntry(full_path, buffer.tell())
                     _, preload_size = buffer.read_fmt('IH')
