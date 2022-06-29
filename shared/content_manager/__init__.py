@@ -5,6 +5,8 @@ from typing import Dict, Iterator, Tuple, Type
 from SourceIO2.shared.content_manager.providers.base_provider import IProvider
 from SourceIO2.utils import FileBuffer, IBuffer
 from .detectors import hla
+from .providers.fs_provider import FileSystemProvider
+from .providers.vpk_provider import VPKProvider
 from ...utils.singleton import Singleton
 
 logger = logging.getLogger('ContentManager')
@@ -26,6 +28,12 @@ class ContentManager(IProvider):
                 self.game_root = root
                 [self.add_provider(name, provider) for name, provider in providers.items()]
                 return self
+
+    def mount(self, path: Path):
+        if path.is_file() and path.suffix == '.vpk':
+            self.add_provider(path.stem, VPKProvider(path))
+        elif path.is_dir() and path.exists():
+            self.add_provider(path.stem, FileSystemProvider(path))
 
     def add_provider(self, name: str, provider: IProvider):
         logger.info(f'Added provider: {provider.__class__.__name__}({name!r})')
