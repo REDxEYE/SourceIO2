@@ -42,6 +42,12 @@ class VertexBuffer(IFromFile):
                 self._vertex_buffer = MemoryBuffer(self.decode_vertex_buffer(data, self.vertex_size, self.vertex_count))
         return self
 
+    def has_attribute(self, attribute_name: str):
+        for attribute in self.attributes:
+            if attribute.name == attribute_name:
+                return True
+        return False
+
     def generate_numpy_dtype(self):
         struct = []
         for attr in self.attributes:
@@ -71,11 +77,11 @@ class VertexAttribute(IFromFile):
 
     @property
     def name(self):
-        return self._name
-        # if self.index == 0:
-        #     return self.name
-        # else:
-        #     return f'{self._name}_{self.index}'
+        # return self._name
+        if self.index == 0:
+            return self._name
+        else:
+            return f'{self._name}_{self.index}'
 
     @classmethod
     def from_file(cls, buffer: IBuffer) -> 'VertexAttribute':
