@@ -2,6 +2,7 @@ import abc
 from pathlib import Path
 from typing import Dict, List, Type, Optional, Union
 
+from SourceIO2.shared.content_manager import ContentManager
 from SourceIO2.utils import IBuffer, MemoryBuffer
 from SourceIO2.source2.data_types.abstract_block import IBlock
 from SourceIO2.source2.data_types.header import ResourceHeader
@@ -55,6 +56,14 @@ class ICompiledResource:
                     if data_block is not None:
                         blocks.append(data_block)
             return blocks or (None,)
+
+    @abc.abstractmethod
+    def get_child_resource_path(self, name_or_id: Union[str, int]):
+        ...
+
+    @abc.abstractmethod
+    def get_child_resource(self, name_or_id: Union[str, int], cm: ContentManager):
+        ...
 
     def __del__(self):
         self._buffer.close()
