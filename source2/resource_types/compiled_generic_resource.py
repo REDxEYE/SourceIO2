@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Type, Union
 
+from SourceIO2.shared.content_manager import ContentManager
+from SourceIO2.source2 import load_compiled_resource
 from SourceIO2.utils import IBuffer
 from SourceIO2.source2.data_types.info_block import InfoBlock
 from SourceIO2.source2.data_types.blocks import BaseBlock, ResourceEditInfo, DataBlock, ResourceExternalReferenceList, \
@@ -44,6 +46,8 @@ class CompiledGenericResource(ICompiledResource):
             return MorphBlock
         elif name == 'MBUF':
             return VertexIndexBuffer
+        elif name == 'VBIB':
+            return VertexIndexBuffer
         else:
             return DummyBlock
 
@@ -53,3 +57,7 @@ class CompiledGenericResource(ICompiledResource):
         for child_resource in external_resource_list:
             if child_resource.hash == name_or_id or child_resource.name == name_or_id:
                 return Path(child_resource.name + '_c')
+
+    def get_child_resource(self, name_or_id: Union[str, int], cm: ContentManager):
+        if resource_path := self.get_child_resource_path(name_or_id):
+            return load_compiled_resource(cm.get_file(resource_path), resource_path)

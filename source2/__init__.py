@@ -18,13 +18,13 @@ def load_compiled_resource(buffer: IBuffer, path: Path):
     if file_type == '.vwrld_c':
         return CompiledWorldResource.from_file(buffer, path)
     if file_type == '.vmdl_c':
-        return CompiledModelRecourse.from_file(buffer, path)
+        return CompiledModelResource.from_file(buffer, path)
     return CompiledGenericResource.from_file(buffer, path)
 
 
 # Recursive import bypass
 from SourceIO2.source2.resource_types.compiled_generic_resource import CompiledGenericResource
-from SourceIO2.source2.resource_types.compiled_model_resource import CompiledModelRecourse
+from SourceIO2.source2.resource_types.compiled_model_resource import CompiledModelResource
 from SourceIO2.source2.resource_types.compiled_material_resource import CompiledMaterialResource
 from SourceIO2.source2.resource_types.compiled_texture_resource import CompiledTextureResource
 from SourceIO2.source2.resource_types.compiled_world_resource import CompiledWorldResource

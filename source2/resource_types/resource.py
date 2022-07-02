@@ -17,6 +17,10 @@ class ICompiledResource:
         self._info_blocks: List[InfoBlock] = []
         self._blocks: Dict[int, IBlock] = {}
 
+    @property
+    def name(self):
+        return self._filename.stem
+
     @classmethod
     @abc.abstractmethod
     def from_file(cls, buffer: IBuffer, filename: Path):
@@ -28,7 +32,7 @@ class ICompiledResource:
 
     def get_data_block(self, *,
                        block_id: Optional[int] = None,
-                       block_name: Optional[str] = None) -> Optional[Union[IBlock, List[IBlock]]]:
+                       block_name: Optional[str] = None) -> Union[Optional[IBlock], List[Optional[IBlock]]]:
         if block_id is not None:
             if block_id == -1:
                 return None
@@ -50,7 +54,7 @@ class ICompiledResource:
                     data_block = self.get_data_block(block_id=i)
                     if data_block is not None:
                         blocks.append(data_block)
-            return blocks
+            return blocks or (None,)
 
     def __del__(self):
         self._buffer.close()

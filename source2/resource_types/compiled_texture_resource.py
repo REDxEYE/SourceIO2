@@ -1,12 +1,15 @@
 import io
 import logging
-from typing import Type, Optional
+from pathlib import Path
+from typing import Type, Optional, Dict, Tuple
 
 import numpy as np
+import numpy.typing as npt
 
 from SourceIO2.source2 import CompiledGenericResource
 from SourceIO2.source2.data_types.blocks import BaseBlock
 from SourceIO2.source2.data_types.blocks.texture_data import TextureData, VTexExtraData, CompressedMip, VTexFormat
+from SourceIO2.utils import IBuffer
 from SourceIO2.utils.pylib_loader import pylib
 
 lz4_decompress = pylib.lz4.decompress
@@ -17,6 +20,11 @@ logger = logging.getLogger('CompiledTextureResource')
 
 
 class CompiledTextureResource(CompiledGenericResource):
+
+    def __init__(self, file: IBuffer, filename: Path):
+        super().__init__(file, filename)
+        self._cached_mips: Dict[int, Tuple[npt.NDArray, bool]] = {}
+
     def _get_block_class(self, name) -> Type[BaseBlock]:
         if name == 'DATA':
             return TextureData
