@@ -15,10 +15,11 @@ class CompiledGenericResource(ICompiledResource):
 
     @classmethod
     def from_file(cls, buffer: IBuffer, filename: Path):
-        self = cls(buffer, filename)
+        self: 'CompiledGenericResource' = cls(buffer, filename)
         self._header = ResourceHeader.from_file(buffer)
         buffer.seek(self._header.block_info_offset)
         self._info_blocks = [InfoBlock.from_file(buffer) for _ in range(self._header.block_count)]
+        self._blocks = [None] * self._header.block_count
         return self
 
     def _get_block_class(self, name) -> Type[BaseBlock]:

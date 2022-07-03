@@ -16,7 +16,7 @@ class ICompiledResource:
         self._filename = filename
 
         self._info_blocks: List[InfoBlock] = []
-        self._blocks: Dict[int, IBlock] = {}
+        self._blocks: List[int, IBlock] = []
 
     @property
     def name(self):
@@ -37,7 +37,7 @@ class ICompiledResource:
         if block_id is not None:
             if block_id == -1:
                 return None
-            data_block = self._blocks.get(block_id, None)
+            data_block = self._blocks[block_id]
             if data_block is None:
                 info_block = self._info_blocks[block_id]
                 data_block_class = self._get_block_class(info_block.name)
