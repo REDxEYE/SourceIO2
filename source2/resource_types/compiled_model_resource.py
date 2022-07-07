@@ -1,9 +1,8 @@
 from typing import Collection, List
 
-from SourceIO2.shared.intermidiate_data.attachment import Attachment, WeightedParent
 from SourceIO2.shared.intermidiate_data.bone import Bone
-from SourceIO2.source2 import CompiledGenericResource
 from SourceIO2.source2.exceptions import MissingBlock
+from SourceIO2.source2.resource_types import CompiledGenericResource
 
 
 class CompiledModelResource(CompiledGenericResource):

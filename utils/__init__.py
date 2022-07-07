@@ -1,4 +1,5 @@
-from .file_utils import IBuffer, FileBuffer, MemoryBuffer, IFromFile
+from .file_utils import IBuffer, FileBuffer, MemoryBuffer
+from .deserialization_utils import IFromFile
 
 # According to the Valve documentation,
 # one hammer unit is 1/16 of feet, and one feet is 30.48 cm

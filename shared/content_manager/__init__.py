@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict, Iterator, Tuple, Type
 
 from SourceIO2.shared.content_manager.providers.base_provider import IProvider
-from SourceIO2.utils import FileBuffer, IBuffer
+from SourceIO2.utils import IBuffer
 from .detectors import hla
 from .providers.fs_provider import FileSystemProvider
 from .providers.vpk_provider import VPKProvider

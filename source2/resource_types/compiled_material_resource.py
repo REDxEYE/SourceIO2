@@ -1,7 +1,7 @@
 from functools import cache
 from typing import List, Dict
 
-from SourceIO2.source2 import CompiledGenericResource
+from SourceIO2.source2.resource_types import CompiledGenericResource
 
 
 class CompiledMaterialResource(CompiledGenericResource):

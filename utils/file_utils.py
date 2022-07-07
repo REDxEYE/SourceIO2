@@ -3,8 +3,9 @@ import binascii
 import contextlib
 import io
 import os
+# Backwards compatibility
+
 from struct import unpack, calcsize, pack
-from typing import overload, TypeVar
 
 
 class IBuffer(abc.ABC, io.RawIOBase):
@@ -206,11 +207,4 @@ class FileBuffer(io.FileIO, IBuffer):
         return f'<FileBuffer: {self.name!r} {self.tell()}/{self.size()}>'
 
 
-class IFromFile(abc.ABC):
-    @classmethod
-    @abc.abstractmethod
-    def from_file(cls, buffer: IBuffer):
-        ...
-
-
-__all__ = ['IBuffer', 'MemoryBuffer', 'FileBuffer', 'IFromFile']
+__all__ = ['IBuffer', 'MemoryBuffer', 'FileBuffer']
