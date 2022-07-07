@@ -3,7 +3,7 @@ import struct
 from dataclasses import dataclass
 from typing import Generic, get_args, TypeVar, get_origin
 
-from file_utils import IBuffer, MemoryBuffer
+from SourceIO2.utils import IBuffer, MemoryBuffer
 
 
 class IFromFile(abc.ABC):
