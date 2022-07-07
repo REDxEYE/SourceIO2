@@ -1,5 +1,5 @@
 from .base import BaseBlock
-from .resource_edit_info import ResourceEditInfo
+from .resource_edit_info import ResourceEditInfo, ResourceEditInfo2
 from .resource_external_reference_list import ResourceExternalReferenceList
 from .resource_introspection_manifest import ResourceIntrospectionManifest
 from .texture_data import TextureData

@@ -6,7 +6,8 @@ from SourceIO2.source2 import load_compiled_resource
 from SourceIO2.utils import IBuffer
 from SourceIO2.source2.data_types.info_block import InfoBlock
 from SourceIO2.source2.data_types.blocks import BaseBlock, ResourceEditInfo, DataBlock, ResourceExternalReferenceList, \
-    ResourceIntrospectionManifest, VertexIndexBuffer, DummyBlock, PhysBlock, AseqBlock, AgrpBlock, MorphBlock
+    ResourceIntrospectionManifest, VertexIndexBuffer, DummyBlock, PhysBlock, AseqBlock, AgrpBlock, MorphBlock, \
+    ResourceEditInfo2
 from SourceIO2.source2.data_types.header import ResourceHeader
 from SourceIO2.source2.resource_types.resource import ICompiledResource
 

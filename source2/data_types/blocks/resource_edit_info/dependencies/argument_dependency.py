@@ -2,6 +2,7 @@ import struct
 from dataclasses import dataclass
 from typing import Any, Union
 
+from SourceIO2.source2.data_types.keyvalues3.types import Object
 from SourceIO2.utils import IBuffer
 from .idependency import IDependency, IDependencyList
 
@@ -22,6 +23,10 @@ class ArgumentDependency(IDependency):
         else:
             data = buffer.read_fmt('2I')
         return cls(name, data_type, *data)
+
+    @classmethod
+    def from_vkv3(cls, vkv: Object) -> 'IDependency':
+        return cls(vkv['m_ParameterName'], vkv['m_ParameterType'], vkv['m_nFingerprint'], vkv['m_nFingerprintDefault'])
 
 
 class ArgumentDependencies(IDependencyList[ArgumentDependency]):
