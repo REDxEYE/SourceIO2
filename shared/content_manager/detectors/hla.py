@@ -19,9 +19,9 @@ class HLADetector(Source2Detector):
         if hlvr_folder is not None:
             hla_root = hlvr_folder.parent
         if hla_root is None:
-            return Path(), {}
+            return None, {}
         if not (hla_root / 'hlvr_addons').exists():
-            return Path(), {}
+            return None, {}
         content_providers = {}
         gameinfo = hlvr_folder / 'gameinfo.gi'
         for path_type, path in cls.scan_gameinfo(gameinfo, hla_root):

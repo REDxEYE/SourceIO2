@@ -4,13 +4,13 @@ from typing import Dict, Iterator, Tuple, Type
 
 from SourceIO2.shared.content_manager.providers.base_provider import IProvider
 from SourceIO2.utils import IBuffer
-from .detectors import hla
+from .detectors import hla, test_data
 from .providers.fs_provider import FileSystemProvider
 from .providers.vpk_provider import VPKProvider
 from ...utils.singleton import Singleton
 
 logger = logging.getLogger('ContentManager')
-detectors = [hla.HLADetector]
+detectors = [hla.HLADetector, test_data.TestDataDetector]
 
 
 class ContentManager(IProvider):

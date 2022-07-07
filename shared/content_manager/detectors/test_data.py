@@ -1,30 +1,28 @@
 from pathlib import Path
 from typing import Dict, Type
 
-from SourceIO2.shared.content_manager.providers.provider_base import IProvider
+from SourceIO2.shared.content_manager.providers.base_provider import IProvider
 from SourceIO2.shared.content_manager.detectors.s2_detector import Source2Detector
 from SourceIO2.shared.content_manager.providers.fs_provider import FileSystemProvider
 from SourceIO2.utils.path_utils import backwalk_resolve
 
 
-class HLADetector(Source2Detector):
+class TestDataDetector(Source2Detector):
     @classmethod
     def register_common(cls, root_path: Path, content_providers: Dict[str, IProvider]):
         pass
 
     @classmethod
-    def detect(cls: Type['HLADetector'], path: Path):
-        hla_root = None
-        hlvr_folder = backwalk_resolve(path, Path('hlvr'))
-        if hlvr_folder is not None:
-            hla_root = hlvr_folder.parent
-        if hla_root is None:
-            return Path(), {}
-        if not (hla_root / 'hlvr_addons').exists():
+    def detect(cls: Type['TestDataDetector'], path: Path):
+        root = None
+        test_marker = backwalk_resolve(path, Path('TEST.TEST'))
+        if test_marker is not None:
+            root = test_marker.parent
+        if root is None:
             return Path(), {}
         content_providers = {}
-        gameinfo = hlvr_folder / 'gameinfo.gi'
-        for path_type, path in cls.scan_gameinfo(gameinfo, hla_root):
+        gameinfo = backwalk_resolve(path, Path('gameinfo.gi'))
+        for path_type, path in cls.scan_gameinfo(gameinfo, root):
             if path_type in ('game', 'mod', 'write'):
                 if path.stem in content_providers:
                     continue
@@ -35,4 +33,4 @@ class HLADetector(Source2Detector):
                         continue
                     content_providers[f'addon_{addon.stem}'] = FileSystemProvider(addon)
 
-        return hla_root, content_providers
+        return root, content_providers
