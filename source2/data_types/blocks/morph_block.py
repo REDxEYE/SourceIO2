@@ -39,15 +39,15 @@ class MorphBlock(DataBlock):
 
     @property
     def lookup_type(self):
-        return self['m_nLookupType']
+        return self.get('m_nLookupType', 'LOOKUP_TYPE_VERTEX_ID')
 
     @property
     def encoding_type(self):
-        return self['m_nEncodingType']
+        return self.get('m_nEncodingType', 'ENCODING_TYPE_OBJECT_SPACE')
 
     @property
     def bundles(self) -> List[str]:
-        return self['m_bundleTypes']
+        return self.get('m_bundleTypes', [])
 
     def get_bundle_id(self, bundle_name):
         if bundle_name in self.bundles:

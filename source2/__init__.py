@@ -19,6 +19,8 @@ def load_compiled_resource(buffer: IBuffer, path: Path):
         return CompiledWorldResource.from_file(buffer, path)
     if file_type == '.vmdl_c':
         return CompiledModelResource.from_file(buffer, path)
+    if file_type == '.vmorf_c':
+        return CompiledMorphResource.from_file(buffer, path)
     return CompiledGenericResource.from_file(buffer, path)
 
 
@@ -28,3 +30,5 @@ from SourceIO2.source2.resource_types.compiled_model_resource import CompiledMod
 from SourceIO2.source2.resource_types.compiled_material_resource import CompiledMaterialResource
 from SourceIO2.source2.resource_types.compiled_texture_resource import CompiledTextureResource
 from SourceIO2.source2.resource_types.compiled_world_resource import CompiledWorldResource
+from SourceIO2.source2.resource_types.compiled_morph_resource import CompiledMorphResource
+
